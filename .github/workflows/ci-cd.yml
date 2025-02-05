@@ -1,10 +1,9 @@
-name: Build
+name: Build and Release
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    tags:
+      - 'v*'
 
 jobs:
   build:
@@ -25,15 +24,17 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pyinstaller matplotlib numpy
+        pip install pyinstaller matplotlib numpy tk
     
     - name: Build with PyInstaller
       run: |
-        pyinstaller --name "Calculadora de Telas" --windowed --onefile main.py
+        pyinstaller --name "Calculadora_de_Telas" --windowed --onefile tela_calculator.py
     
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
       with:
-        name: ${{ matrix.os }}-executable
-        path: dist/
-        retention-days: 90
+        files: |
+          dist/Calculadora_de_Telas*
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
